@@ -1,0 +1,58 @@
+<!-- Set to "true" if you want each day on it's own page -->
+{% assign day_page_break = false %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Basic
+      {{ report.kind | capitalize }}
+      Report by Date</title>
+    <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
+    <meta charset="utf-8">
+    <style>
+      li {
+        list-style-type: none;
+      }
+      .header-text {
+        height: 200px;
+      }
+      .test {
+        margin-top: -200px;
+        margin-bottom: 0;
+        height: 100vh;
+      }
+    </style>
+  </head>
+  <body>
+    {% if report.org_twenty_four_hour_time? %}
+      {% assign time_format = "%H:%M" %}
+    {% else %}
+      {% assign time_format = "%-I:%M%P" %}
+    {% endif %}
+
+    {% if report.org_day_month_dates? %}
+      {% assign date_format = "%d/%m/%Y" %}
+    {% else %}
+      {% assign date_format = "%m/%d/%Y" %}
+    {% endif %}
+
+    {% for day in days_with_instances %}
+      <div class="header-text">
+        <h1 class="header-large txt-center gutter-bottom-small">Basic
+          {{ report.kind | capitalize }}
+          Report by Date</h1>
+        <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}
+          :
+          {{ report.start_date }}
+          through
+          {{ report.end_date }}
+        </h2>
+      </div>
+      <div page-break class="test">
+        {{day}}
+        <h3 class="header-medium">{{ day.date | date: '%A, %B %-d, %Y'}}
+        </h3>
+      </div>
+    {% endfor %}
+  </body>
+</html>
