@@ -14,45 +14,190 @@
         list-style-type: none;
       }
       .header-text {
+        font-size: 24pt;
         height: 200px;
       }
-      .test {
+      .newPage {
+        padding-top: 50px;
         margin-top: -200px;
         margin-bottom: 0;
         height: 100vh;
       }
+      table,
+      th,
+      td {
+        border: 1px solid;
+      }
+      td {
+        padding: 0 !important;
+      }
+      thead {
+        font-weight: bold;
+        font-size: 18pt;
+      }
+      .topNumberContainer {
+        width: 100%;
+        height: 20px;
+        background-color: #444444;
+        color: white;
+        padding: 2px;
+        font-size: 12pt;
+        text-align: center;
+      }
+      .cellContentContainer {
+        padding: 8px;
+      }
+      .cellContentContainer li {
+        display: list-item;
+        font-size: 10pt;
+        padding-bottom: 12px;
+      }
     </style>
   </head>
   <body>
+    {% capture start_date %}
+      {{ instance.starts_at | date: "%m/%d/%Y" }}
+    {% endcapture %}
+    {% capture end_date %}
+      {{ instance.ends_at | date: "%m/%d/%Y" }}
+    {% endcapture %}
+    {% capture today %}
+      {{ day.date | date: "%m/%d/%Y" }}
+    {% endcapture %}
     {% if report.org_twenty_four_hour_time? %}
-      {% assign time_format = "%H:%M" %}
+      {% assign time_format = "%H:%M" -%}
     {% else %}
-      {% assign time_format = "%-I:%M%P" %}
+      {% assign time_format = "%-I:%M%P" -%}
     {% endif %}
 
     {% if report.org_day_month_dates? %}
-      {% assign date_format = "%d/%m/%Y" %}
+      {% assign date_format = "%d/%m/%Y" -%}
     {% else %}
-      {% assign date_format = "%m/%d/%Y" %}
+      {% assign date_format = "%m/%d/%Y" -%}
     {% endif %}
-
+    <!--
+    <h3 class="header-medium">{{ day.date | date: '%A, %B %-d, %Y'}}
+    </h3>
+    -->
+    <!--
     {% for day in days_with_instances %}
-      <div class="header-text">
-        <h1 class="header-large txt-center gutter-bottom-small">Basic
-          {{ report.kind | capitalize }}
-          Report by Date</h1>
-        <h2 class="header-medium txt-center soft gutter-bottom-large">{{ report.scope }}
-          :
-          {{ report.start_date }}
-          through
-          {{ report.end_date }}
-        </h2>
-      </div>
-      <div page-break class="test">
-        {{day}}
-        <h3 class="header-medium">{{ day.date | date: '%A, %B %-d, %Y'}}
-        </h3>
-      </div>
+
     {% endfor %}
+    -->
+    {% assign weekIndex = 1%}
+    <h1 class="header-text">{{ days_with_instances.first.date | date: "%B" }}
+    </h1>
+    <div class="newPage">
+      <table>
+        <thead>
+          <tr>
+            <th>
+              Sunday
+            </th>
+            <th>
+              Monday
+            </th>
+            <th>
+              Tuesday
+            </th>
+            <th>
+              Wednesday
+            </th>
+            <th>
+              Thursday
+            </th>
+            <th>
+              Friday
+            </th>
+            <th>
+              Saturday
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {%for day in days_with_instances %}
+            <!--{{ day.date | date: "%A, %B %-d, %Y"}} -->
+            {% if dayIndex == 0 %}
+              <tr>
+              {% endif %}
+              <td>
+                <div class="topNumberContainer">
+                  {{day.date | date: "%-d"}}
+                </div>
+                <div class="cellContentContainer">
+                  <ul>
+                    {% for instance in day.instances | sort: "starts_at" %}
+                      <li>
+                        <div class="time">
+                          {% if instance.reservation.all_day_event? %}
+                            All-day,
+                          {% elsif start_date == today and start_date != end_date %}
+                            Today,
+                            {{ instance.starts_at | date: time_format }}
+                          {% elsif start_date == end_date %}
+                            {{ instance.starts_at | date: time_format | downcase | strip | append: ","}}
+                          {% else %}
+                            {{instance.starts_at | date: date_format }}
+                            ({{ instance.starts_at | date: time_format | downcase | strip | ","}}
+                            )
+                          {% endif %}
+                          {{instance.reservation.location}}
+                        </div>
+                      </li>
+                    {% endfor%}
+                  </ul>
+                </div>
+              </td>
+              {% if dayIndex == 6%}
+              </tr>
+            {% endif %}
+            {% assign dayIndex = dayIndex | plus: 1 %}
+            {% if dayIndex == 7%}
+              {% assign dayIndex = 0 %}
+              {% assign weekIndex = weekIndex | plus: 1 %}
+
+              {% if weekIndex == 3 %}
+                {% assign weekIndex = 1 %}
+                <!-- end/start of the table for a given week -->
+              </tbody>
+            </table>
+          </div>
+          <h1 class="header-text">{{ day.date | date: '%B'}}
+          </h1>
+          <div class="newPage">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Sunday
+                  </th>
+                  <th>
+                    Monday
+                  </th>
+                  <th>
+                    Tuesday
+                  </th>
+                  <th>
+                    Wednesday
+                  </th>
+                  <th>
+                    Thursday
+                  </th>
+                  <th>
+                    Friday
+                  </th>
+                  <th>
+                    Saturday
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- End of end/start of table -->
+              {% endif%}
+            {% endif%}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>
