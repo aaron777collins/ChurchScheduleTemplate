@@ -84,7 +84,20 @@
 
     {% endfor %}
     -->
+
+
     {% assign weekIndex = 1%}
+    {% assign dayIndex = 0%}
+
+    {% assign DAY_OFFSET_AMOUNT = 0 %}
+    {%for day in days %}
+      {% assign currentDayName = day.date | date: "%A" %}
+      {% if currentDayName == "Sunday" %}
+        {% assign DAY_OFFSET_AMOUNT = day.date | date: "%-d" | plus: -1 %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+
     <h1 class="header-text">{{ days_with_instances.first.date | date: "%B" }}
     </h1>
     <div class="newPage">
@@ -115,8 +128,14 @@
           </tr>
         </thead>
         <tbody>
+          {% assign amountToSkip = DAY_OFFSET_AMOUNT %}
           <!-- need start time, event name and the rooms -->
-          {%for day in days_with_instances %}
+          {%for day in days %}
+            {% if amountToSkip > 0 %}
+              {% assign amountToSkip = amountToSkip | minus: 1 %}
+              {% continue %}
+            {% endif%}
+
             <!--{{ day.date | date: "%A, %B %-d, %Y"}} -->
             {% if dayIndex == 0 %}
               <tr>
@@ -142,7 +161,18 @@
                             ({{ instance.starts_at | date: time_format | downcase | strip | ","}}
                             )
                           {% endif %}
-                          {{instance.reservation.location}}
+                          {{instance.event.name}}
+                          {% for room_request in instance.reservation.room_requests %}
+                            <li {% if forloop.last == false %}style="padding-bottom: 5px;"{% endif %}>
+                              -
+                              {{ room_request.room.name }}
+                              {% if room_request.room_setup %}
+                                <span style="color: grey;">(
+                                  {{ room_request.room_setup.name }}
+                                  )</span>
+                              {% endif %}
+                            </li>
+                          {% endfor %}
                         </div>
                       </li>
                     {% endfor%}
