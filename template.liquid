@@ -10,6 +10,11 @@
     <link rel="stylesheet" type="text/css" media="all" href="{{ report.stylesheet_href }}">
     <meta charset="utf-8">
     <style>
+      @media print {
+        @page {
+          size: landscape
+        }
+      }
       li {
         list-style-type: none;
       }
