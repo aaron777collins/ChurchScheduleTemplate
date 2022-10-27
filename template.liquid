@@ -21,6 +21,7 @@
       .header-text {
         font-size: 24pt;
         height: 200px;
+        text-align: center;
       }
       .newPage {
         padding-top: 50px;
@@ -40,6 +41,20 @@
         font-weight: bold;
         font-size: 18pt;
       }
+      table {
+        table-layout: fixed;
+        width: 100%;
+      }
+      th,
+      td {
+        width: calc(100% / 7);
+        overflow: hidden;
+      }
+      th {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        font-size: 12pt;
+      }
       .topNumberContainer {
         width: 100%;
         height: 20px;
@@ -56,6 +71,10 @@
         display: list-item;
         font-size: 10pt;
         padding-bottom: 12px;
+      }
+      li.roomitem {
+        padding-left: 12px;
+        padding-bottom: 0 !important;
       }
     </style>
   </head>
@@ -94,11 +113,13 @@
     {% assign weekIndex = 1%}
     {% assign dayIndex = 0%}
 
+    {% assign beginningDay = days.first.date | date: "%-d" | plus: 0 %}
+
     {% assign DAY_OFFSET_AMOUNT = 0 %}
     {%for day in days %}
       {% assign currentDayName = day.date | date: "%A" %}
       {% if currentDayName == "Sunday" %}
-        {% assign DAY_OFFSET_AMOUNT = day.date | date: "%-d" | plus: -1 %}
+        {% assign DAY_OFFSET_AMOUNT = day.date | date: "%-d" | minus: beginningDay %}
         {% break %}
       {% endif %}
     {% endfor %}
@@ -166,18 +187,20 @@
                             ({{ instance.starts_at | date: time_format | downcase | strip | ","}}
                             )
                           {% endif %}
-                          {{instance.event.name}}
-                          {% for room_request in instance.reservation.room_requests %}
-                            <li {% if forloop.last == false %}style="padding-bottom: 5px;"{% endif %}>
-                              -
-                              {{ room_request.room.name }}
-                              {% if room_request.room_setup %}
-                                <span style="color: grey;">(
-                                  {{ room_request.room_setup.name }}
-                                  )</span>
-                              {% endif %}
-                            </li>
-                          {% endfor %}
+                          <div>{{instance.event.name}}</div>
+                          <ul>
+                            {% for room_request in instance.reservation.room_requests %}
+                              <li class="roomitem" {% if forloop.last == false %}style="padding-bottom: 5px;"{% endif %}>
+                                •
+                                {{ room_request.room.name }}
+                                {% if room_request.room_setup %}
+                                  <span style="color: #222222;">(
+                                    {{ room_request.room_setup.name }}
+                                    )</span>
+                                {% endif %}
+                              </li>
+                            {% endfor %}
+                          </ul>
                         </div>
                       </li>
                     {% endfor%}
